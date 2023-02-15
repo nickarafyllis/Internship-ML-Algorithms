@@ -4,7 +4,6 @@
 #include "TStopwatch.h"
 #include "TF1.h"
 #include "TMath.h"
-
 //---------------------------------------------------------------------------------------------------------//
 // Find Distance between Muon Vertex and Photon Production Point (lambda)
 //---------------------------------------------------------------------------------------------------------//
@@ -72,7 +71,7 @@ void LocalFindTrackLengthInWater()
    //csvfile.open ("data_forRecoLength_05202019.csv");
    //csvfile.open ("data/data_forRecoLength_06082019.csv");
    //csvfile.open ("data/data_forRecoLength_06082019CC0pi.csv"); //events with no pi's
-   csvfile.open ("data_forRecoLength_beamlikeEvts.csv");
+   csvfile.open ("data_forRecoLength_beamlikeEvts19.csv");
 
    int maxhits0=1100; 
       //--- write to file: ---//
@@ -119,7 +118,9 @@ void LocalFindTrackLengthInWater()
         csvfile<<"truevtxX"<<",";
         csvfile<<"truevtxY"<<",";
         csvfile<<"truevtxZ"<<",";
-        csvfile<<"recoVtxFOM";
+        csvfile<<"recoVtxFOM"<<",";
+        csvfile<<"eventNumber";
+        //csvfile<<"recoTrackLengthInMrd";
         //csvfile<<"recoStatus"<<",";  //comment
         //csvfile<<"deltaVtxR"<<",";   //comment
         //csvfile<<"deltaAngle";       //comment
@@ -131,7 +132,7 @@ void LocalFindTrackLengthInWater()
    //sprintf(fname,"PMTLAPPDReco_743Runs_05202019.root");//,i);
    //sprintf(fname,"data/PMTLAPPDReco_All_06082019.root");
    //sprintf(fname,"/home/liliadrak/ANNIE/ntuples_Ereco/vtxreco-beamlikegridall-cut.root");
-   sprintf(fname,"vtxreco-beamlikemrd.root");
+   sprintf(fname,"beamlikemu/vtxreco-beamlikemrd19.root");
    TFile *input=new TFile(fname,"READONLY");
    cout<<"input file: "<<fname<<endl;
    
@@ -144,6 +145,7 @@ void LocalFindTrackLengthInWater()
    std::string *TrueInteractionType = 0;
    std::vector<double> *digitX=0; std::vector<double> *digitY=0;  std::vector<double> *digitZ=0;
    std::vector<double> *digitT=0; std::vector<int>  *digitType=0;
+   //std::vector<double> *MRDTrackLength=0;
    float trueMuonEnergy=0.;
    int Pi0Count,PiPlusCount,PiMinusCount;
    double DR;
@@ -183,6 +185,7 @@ void LocalFindTrackLengthInWater()
    regTree->SetBranchAddress("Pi0Count", &Pi0Count);
    regTree->SetBranchAddress("PiPlusCount", &PiPlusCount);
    regTree->SetBranchAddress("PiMinusCount", &PiMinusCount);
+   //regTree->SetBranchAddress("MRDTrackLength", &MRDTrackLength);
   
    cout<<"regTree->GetEntries(): "<<regTree->GetEntries()<<endl;
    TH1F *h1 = new TH1F("h1", "DR", 400, 0.0, 400.0);
@@ -246,7 +249,7 @@ void LocalFindTrackLengthInWater()
        TrueTrackLengthInMrd2 = TrueTrackLengthInMrd/200.;
        //--- 
        TrueTrackLengthInWater2 = TrueTrackLengthInWater*100.;//converting from m to cm //TrueTrackLengthInWater/500.;
-
+       //recoTrackLengthInMrd=MRDTrackLength->at(0);
         //----- write to .csv file - including variables for track length & energy reconstruction:
         for(int i=0; i<maxhits0;++i){
            csvfile<<lambda_vec[i]<<",";
@@ -278,7 +281,9 @@ void LocalFindTrackLengthInWater()
         csvfile<<truevtxX<<",";
         csvfile<<truevtxY<<",";
         csvfile<<truevtxZ<<",";
-        csvfile<<recoVtxFOM;
+        csvfile<<recoVtxFOM<<",";
+        csvfile<<event;
+        //csvfile<<recoTrackLengthInMrd;
         //csvfile<<recoStatus<<",";
         //csvfile<<deltaVtxR<<",";
         //csvfile<<deltaAngle;
@@ -297,8 +302,8 @@ void LocalFindTrackLengthInWater()
     h2->Write();
     f->Close();
    input->Close();
+   csvfile.close();
 cout <<"Num of events with TrueTrackLengthinMRD>0 and recoVtxFOM>0"<<count2<<endl;
 cout<<"Num of events with recoVtxFOM>0: "<<count1<<endl;
 }
-
 
