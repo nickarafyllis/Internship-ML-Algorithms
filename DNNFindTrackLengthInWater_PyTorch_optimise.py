@@ -38,14 +38,14 @@ infile = "data_for_trackLength_training.csv"
 #
 
 # Set TF random seed to improve reproducibility
-seed = 170
+seed = 150
 np.random.seed(seed)
 
 print( "--- opening file with input variables!")
 #--- events for training - MC events
 filein = open(str(infile))
 print("evts for training in: ",filein)
-Dataset=np.array(pd.read_csv(filein, index_col=0))
+Dataset=np.array(pd.read_csv(filein))
 print(Dataset)
 np.random.shuffle(Dataset)
 print(Dataset)

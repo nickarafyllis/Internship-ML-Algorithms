@@ -20,14 +20,17 @@ import matplotlib.pyplot as plt
 infile = "data_for_trackLength_training.csv"
 
 # Set TF random seed to improve reproducibility
-seed = 170
+seed = 150
 np.random.seed(seed)
+torch.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 print( "--- opening file with input variables!")
 #--- events for training - MC events
 filein = open(str(infile))
 print("evts for training in: ",filein)
-Dataset=np.array(pd.read_csv(filein, index_col=0))
+Dataset=np.array(pd.read_csv(filein))
 np.random.shuffle(Dataset)  #shuffling the data sample to avoid any bias in the training
 #print(Dataset)
 features, lambdamax, labels, rest = np.split(Dataset,[2203,2204,2205],axis=1) #labels = TrueTrackLengthInWater
@@ -51,9 +54,9 @@ train_x = scaler.fit_transform(train_x)
 class SimpleModel(nn.Module):
     def __init__(self):
         super(SimpleModel, self).__init__()
-        self.fc1 = nn.Linear(2203, 100)
-        self.fc2 = nn.Linear(100, 10)
-        self.fc3 = nn.Linear(10, 1)
+        self.fc1 = nn.Linear(2203, 25)
+        self.fc2 = nn.Linear(25, 25)
+        self.fc3 = nn.Linear(25, 1)
         self.relu = nn.ReLU()
         
         # Initialize the weights
@@ -73,7 +76,7 @@ def create_model():
 
 criterion = nn.MSELoss()
 learning_rate = 0.001
-epochs = 12
+epochs = 10
 batch_size = 2
 
 # Initialize the model and optimizer
@@ -128,5 +131,4 @@ plt.xlabel('Epochs')
 plt.ylabel('Performance')
 plt.legend()
 plt.xlim(1, epochs)
-plt.savefig("pytorch_train_test.pdf")
-
+plt.savefig("Pytorch/train_test.pdf")

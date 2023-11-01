@@ -2,7 +2,6 @@ import sys
 import glob
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 import tempfile
 import random
 import csv
@@ -40,14 +39,17 @@ infile2 = "data_for_trackLength_training.csv"
 #
 
 # Set TF random seed to improve reproducibility
-seed = 170
+seed = 150
 np.random.seed(seed)
+torch.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 print( "--- opening file with input variables!")
 #--- events for training - MC events
 filein = open(str(infile))
 print("evts for training in: ",filein)
-Dataset = np.array(pd.read_csv(filein, index_col=0))
+Dataset = np.array(pd.read_csv(filein))
 #Dataset1=np.delete(Dataset,obj=1398,axis=0)
 np.random.shuffle(Dataset)
 print(Dataset)
@@ -56,8 +58,9 @@ features, lambdamax, labels, rest = np.split(Dataset,[2203,2204,2205],axis=1)
 #--- events for predicting
 filein2 = open(str(infile2))
 print("events for prediction in: ",filein2)
-Dataset2 = np.array(pd.read_csv(filein2, index_col=0))
+Dataset2 = np.array(pd.read_csv(filein2))
 #Dataset22=np.delete(Dataset2,obj=1398,axis=0)
+np.random.seed(seed)
 np.random.shuffle(Dataset2)
 print(Dataset2)
 features2, lambdamax2, labels2, rest2 = np.split(Dataset2,[2203,2204,2205],axis=1)
@@ -70,7 +73,7 @@ print(num_events, num_pixels)
 np.random.seed(0)
 train_x = features[:2000]
 train_y = labels[:2000]
-test_x = features[2000:]
+test_x = features2[2000:]
 test_y = labels2[2000:]
 #    print("len(train_y): ",len(train_y)," len(test_y): ", len(test_y))
 print("train sample features shape: ", train_x.shape," train sample label shape: ", train_y.shape)
@@ -84,9 +87,12 @@ train_x = scaler.fit_transform(train_x)
 class SimpleModel(nn.Module):
     def __init__(self):
         super(SimpleModel, self).__init__()
-        self.fc1 = nn.Linear(2203, 100)
-        self.fc2 = nn.Linear(100, 10)
-        self.fc3 = nn.Linear(10, 1)
+        self.fc1 = nn.Linear(2203, 25)
+        self.fc2 = nn.Linear(25, 25)
+        self.fc3 = nn.Linear(25, 1)
+        # self.fc1 = nn.Linear(2203, 100)
+        # self.fc2 = nn.Linear(100, 10)
+        # self.fc3 = nn.Linear(10, 1)
         self.relu = nn.ReLU()
         
         # Initialize the weights
@@ -138,7 +144,7 @@ df = pd.DataFrame({'TrueTrackLengthInWater': test_y.reshape(-1), 'DNNRecoLength'
 #---read .csv file containing predict
 np.random.seed(seed)
 filein2 = open(str(infile2))
-df1=pd.read_csv(filein2, index_col=0)
+df1=pd.read_csv(filein2)
 Dataout=np.array(df1)
 #Dataout1=np.delete(Dataout,obj=1398,axis=0)
 np.random.shuffle(Dataout)
@@ -182,8 +188,8 @@ assert(df_final.shape[0]==df.shape[0]-len(a))
 #df_final[600:].to_csv("vars_Ereco_pred_05202019.csv", float_format = '%.3f') #to be used for the energy prediction
 
 df_final.to_csv("vars_Ereco.csv", float_format = '%.3f')
-df_final[:(1143-len(a))].to_csv("vars_Ereco_train.csv", float_format = '%.3f')
-df_final[(1143-len(a)):].to_csv("vars_Ereco_pred.csv", float_format = '%.3f')
+df_final[:(1187-len(a))].to_csv("vars_Ereco_train.csv", float_format = '%.3f')
+df_final[(1187-len(a)):].to_csv("vars_Ereco_pred.csv", float_format = '%.3f')
 
 #df_final.to_csv("vars_Ereco_06082019CC0pi.csv", float_format = '%.3f')
 #df_final[:1000].to_csv("vars_Ereco_train_06082019CC0pi.csv", float_format = '%.3f')
